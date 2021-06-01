@@ -2,31 +2,26 @@
 
 
 #include "PlayerCameraPawn.h"
-#include "Components/InputComponent.h"
 #include "GameFramework/PlayerController.h"
 
 // Sets default values
 APlayerCameraPawn::APlayerCameraPawn()
-	:
-	TouchMoveSensitivity(5.0f),
-	MoveLimit(FVector2D(2400.0f, 2400.0f))
 {
- 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-
+	// Create RootScene:
 	RootScene = CreateDefaultSubobject<USceneComponent>(TEXT("RootScene"));
 	RootComponent = RootScene;
 
-	// Create spring arm and setup it:
+	// Create spring arm and attach it to RootScene:
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArm->SetupAttachment(RootScene);
+
 	SpringArm->bDoCollisionTest = false;
 	SpringArm->TargetArmLength = 2000.0f;
 	SpringArm->SetRelativeRotation(FRotator(-70.f, 0.f, 0.f));
-	// Camera lag enables smooth panning
-	SpringArm->bEnableCameraLag = true;
+	SpringArm->bEnableCameraLag = false;
 	SpringArm->CameraLagSpeed = 5.0f;
 
+	// Create camera and attach it to SpringArm:
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
 }
@@ -35,60 +30,25 @@ APlayerCameraPawn::APlayerCameraPawn()
 void APlayerCameraPawn::PossessedBy(AController* NewController)
 {
 	PlayerController = Cast<APlayerController>(NewController);
-	
-	if (PlayerController)
-	{
-		// This allows the cursor to be displayed:
-		PlayerController->bShowMouseCursor = true;
-		PlayerController->bEnableClickEvents = true;
-		PlayerController->bEnableMouseOverEvents = true;
-	}
-}
-
-// Called when the game starts or when spawned
-void APlayerCameraPawn::BeginPlay()
-{
-	Super::BeginPlay();
 }
 
 
-// Called every frame
-void APlayerCameraPawn::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
-
-// Called to bind functionality to input
-void APlayerCameraPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	InputComponent->BindTouch(IE_Pressed, this, &APlayerCameraPawn::OnTouchPress);
-
-	InputComponent->BindTouch(IE_Repeat, this, &APlayerCameraPawn::OnTouchMove);
-}
-
-
-// Touch controls
-void APlayerCameraPawn::OnTouchMove(ETouchIndex::Type FingerIndex, FVector Location)
-{
-	// Delta move:
-	FVector2D TouchDeltaMove = FVector2D(TouchLocation.X - Location.X, TouchLocation.Y - Location.Y);
-
-	// Apply sensitivity to touch:
-	TouchDeltaMove = TouchDeltaMove * TouchMoveSensitivity;
-
-	// Camera move restrictions on the map.
-	FVector NewLocation = GetActorLocation();
-	NewLocation.X = FMath::Clamp(NewLocation.X + TouchDeltaMove.Y * -1.0f, -MoveLimit.Y, MoveLimit.Y);
-	NewLocation.Y = FMath::Clamp(NewLocation.Y + TouchDeltaMove.X, -MoveLimit.X, MoveLimit.X);
-
-	SetActorLocation(NewLocation);
-
-	TouchLocation = FVector2D(Location.X, Location.Y);
-}
-
-void APlayerCameraPawn::OnTouchPress(ETouchIndex::Type FingerIndex, FVector Location)
-{
-	TouchLocation = FVector2D(Location.X, Location.Y);
-}
+//void APlayerCameraPawn::OnTouchReleased(ETouchIndex::Type FingerIndex, FVector Location)
+//{
+//	UE_LOG(LogType, Log, TEXT("OnTouchReleased"));
+//
+//	// Delta vector between press and release
+//	//FVector2D TouchDeltaRelease = FVector2D(PressTouchLocation.X - Location.X, PressTouchLocation.Y - Location.Y);
+//	
+//	FHitResult Hit;
+//	bool bHit = PlayerController->GetHitResultUnderCursor(ECC_Visibility, false, Hit);
+//
+//	//UE_LOG(LogTemp, Log, TEXT("bool "), FString::ToBool(bHit));
+//	if (bHit)
+//	{
+//		DrawDebugBox(GetWorld(), Hit.Location, FVector(10), FColor::Red, true, 10, 0U, 10.f);
+//		UE_LOG(LogTemp, Log, TEXT("DebugBox drawn in: %s"), *Hit.Location.ToString());
+//	}
+//
+//
+//}
