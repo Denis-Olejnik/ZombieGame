@@ -4,7 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "Pawns/BasicPawn.h"
 #include "PlayerCameraController.generated.h"
+
+// TODO: Перенести часть кода в PlayerCameraPawn (Переменные и методы).
+//		 в PlayerCameraController должен находиться только код, отвественный за перемещение.
+ 
+
+//					UE4 RTS Player Controller in C++ 
+// https://www.youtube.com/watch?v=P8AR7OF7Vvc&ab_channel=TwoNeurons
 
 
 UCLASS()
@@ -17,22 +25,27 @@ public:
 
 protected:
 	// PlayerController interface
-	virtual void PlayerTick(float DeltaTime) override;
 	virtual void SetupInputComponent() override;
 
+	// TODO: Реализовать спавн актёра, если было касание, но камера не сдвинулась
+	//		 Возможное решение: Скопировать метод из PlayerCameraPawn, который проверяет дельту в OnTouchRelease.
 	void OnTouchPress(ETouchIndex::Type FingerIndex, FVector Location);
 	void OnTouchMove(ETouchIndex::Type FingerIndex, FVector Location);
 	void SpawnActorUnderMouseCursor();
 	void SpawnActorUnderTouchLocation(const ETouchIndex::Type FingerIndex, const FVector Location);
-	void SpawnActor(FVector SpawnLoc);
+	void SpawnActor(FHitResult HitResult);
 
 private:
 	FVector2D TouchLocation;
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings", meta = (UIMin = 0.5f, UIMax = 10.0f))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings", meta = (UIMin = 0.5f, UIMax = 10.0f))
 	float TouchMoveSensitivity;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings", meta = (UIMin = 0.0f))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings", meta = (UIMin = 0.0f))
 	FVector2D MoveLimit;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+	TSubclassOf<class ABasicPawn> ActorToSpawn;
+
 };

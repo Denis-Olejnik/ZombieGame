@@ -9,9 +9,6 @@ ABasicPawn::ABasicPawn()
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	//RootScene = CreateDefaultSubobject<USceneComponent>(TEXT("RootScene"));
-	//RootComponent = RootScene;
-
 	CapsuleComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("CapsuleCompoment"));
 	RootComponent = CapsuleComponent;
 	CapsuleComponent->SetCapsuleHalfHeight(88.0f);
@@ -42,11 +39,3 @@ void ABasicPawn::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 }
-
-// Called to bind functionality to input
-void ABasicPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-}
-

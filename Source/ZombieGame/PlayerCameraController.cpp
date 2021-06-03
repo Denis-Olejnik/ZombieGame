@@ -15,11 +15,8 @@ APlayerCameraController::APlayerCameraController()
 	bShowMouseCursor = true;
 	bEnableClickEvents = true;
 	DefaultMouseCursor = EMouseCursor::Crosshairs;
-}
 
-void APlayerCameraController::PlayerTick(float DeltaTime)
-{
-	Super::PlayerTick(DeltaTime);
+	//SetInputMode(FInputModeGameOnly());
 }
 
 void APlayerCameraController::SetupInputComponent()
@@ -60,12 +57,12 @@ void APlayerCameraController::OnTouchMove(ETouchIndex::Type FingerIndex, FVector
 void APlayerCameraController::SpawnActorUnderMouseCursor()
 {
 	FHitResult HitResult;
+	
 	GetHitResultUnderCursor(ECC_Visibility, false, HitResult);
-
 	if (HitResult.bBlockingHit)
 	{
 		// We hit something. Try to spawn
-		SpawnActor(HitResult.ImpactPoint);
+		SpawnActor(HitResult);
 	}
 }
 
@@ -78,15 +75,50 @@ void APlayerCameraController::SpawnActorUnderTouchLocation(const ETouchIndex::Ty
 	if (HitResult.bBlockingHit)
 	{
 		// We hit something. Try to spawn
-		SpawnActor(HitResult.ImpactPoint);
+		SpawnActor(HitResult);
 	}
 }
 
-void APlayerCameraController::SpawnActor(FVector SpawnLoc)
+void APlayerCameraController::SpawnActor(FHitResult HitResult)
 {
-	DrawDebugBox(GetWorld(), SpawnLoc, FVector(10.0f), FColor::Red, false, 10.0f);
+	FVector SpawnLoc(HitResult.ImpactPoint);
+	FRotator SpawnRot(0.0f);
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
-	UE_LOG(LogTemp, Display, TEXT("PawnName spawned in %s"), *SpawnLoc.ToString());
+
+	if (IsValid(ActorToSpawn))
+	{
+		DrawDebugBox(GetWorld(), SpawnLoc, FVector(40.0f), FColor::Red, false, 10.0f, 0U, 3.0f);
+
+		// TODO: Разобраться почему Pawn появляется по пояс в полу.
+		//		 Возможное решение: брать высоту капсулы, делить её на половину и прибавлять к SpawnLoc.
+		
+		// TODO: Исправить баг, когда pawn можно заспавнить на крыше. Реализовать проверку поверхности?
+		
+
+		// TOOO: Вселять AIControllerPawn в текущий эктор.
+		// 
+		
+		// TODO: Сделать Teams для павнов. 
+		//		 Ссылка: https://www.youtube.com/watch?v=Il5bqRy3Z2w&ab_channel=TwoNeurons
+		
+		ABasicPawn* NewPawn = GetWorld()->SpawnActor<ABasicPawn>(ActorToSpawn, SpawnLoc, SpawnRot, SpawnParams);
+
+		if (IsValid(NewPawn))
+		{
+			UE_LOG(LogTemp, Log, TEXT("Pawn %s spawned in %s"), *NewPawn->GetName(), *SpawnLoc.ToString());
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Pawn not spawned! "));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Pawn not spawned! PawnToSpawn is not valid"));
+	}
+	
 }
 
 
